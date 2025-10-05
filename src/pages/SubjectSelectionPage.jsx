@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, Calculator, Globe, Atom, FlaskConical, Play } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, BookOpen, Calculator, Globe, Atom, FlaskConical, Play, Clock, FileText } from 'lucide-react';
 
 const SubjectSelectionPage = () => {
   const navigate = useNavigate();
   const { category } = useParams();
+  const [selectedSubject, setSelectedSubject] = useState(null);
 
   const allSubjects = [
     { category: 'wajib', id: 'matematika', name: 'Matematika', icon: Calculator, description: 'Aljabar, Geometri, Kalkulus Dasar' },
@@ -23,13 +24,11 @@ const SubjectSelectionPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <button onClick={() => navigate('/dashboard')} className="flex items-center space-x-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium">
-              <ArrowLeft className="w-5 h-5" />
-              <span>Kembali</span>
+              <ArrowLeft className="w-5 h-5" /><span>Kembali</span>
             </button>
             <img src="https://raw.githubusercontent.com/Rendradnta/BoboiboyDB/main/database/7beaae1d85aa9e9f.jpeg" alt="RESABELAJAR Logo" className="w-10 h-10 rounded-full object-cover"/>
           </div>
@@ -37,46 +36,64 @@ const SubjectSelectionPage = () => {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.5 }}
-        >
-          <div className="text-center mb-10">
-            <h1 className={`text-3xl font-bold ${titleColor}`}>{pageTitle}</h1>
-            <p className="mt-2 text-lg text-gray-600">Pilih salah satu mata pelajaran untuk memulai simulasi.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {subjectsToShow.map((subject, index) => {
-              const IconComponent = subject.icon;
-              return (
-                <motion.div
-                  key={subject.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col text-center"
-                  whileHover={{ y: -8 }}
-                >
-                  <div className="p-8 flex-grow flex flex-col items-center">
-                    <div className="bg-gray-100 p-4 rounded-full mb-4">
-                      <IconComponent className={`w-8 h-8 ${titleColor}`} />
-                    </div>
-                    <h4 className="text-xl font-bold text-gray-900">{subject.name}</h4>
-                    <p className="text-sm text-gray-500 mt-2 flex-grow">{subject.description}</p>
-                    <button
-                      onClick={() => navigate(`/exam/${subject.id}`)}
-                      className="mt-6 w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center space-x-2"
+        <AnimatePresence mode="wait">
+          {!selectedSubject ? (
+            <motion.div key="selection" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+              <div className="text-center mb-10">
+                <h1 className={`text-3xl font-bold ${titleColor}`}>{pageTitle}</h1>
+                <p className="mt-2 text-lg text-gray-600">Pilih salah satu mata pelajaran untuk memulai.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {subjectsToShow.map((subject, index) => {
+                  const IconComponent = subject.icon;
+                  return (
+                    <motion.div
+                      key={subject.id}
+                      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.1 }}
+                      whileHover={{ y: -8 }}
+                      onClick={() => setSelectedSubject(subject)}
+                      className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col text-center cursor-pointer"
                     >
-                      <Play className="w-5 h-5" />
-                      <span>Mulai Simulasi</span>
-                    </button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
+                      <div className="p-8 flex-grow flex flex-col items-center">
+                        <div className="bg-gray-100 p-4 rounded-full mb-4"><IconComponent className={`w-8 h-8 ${titleColor}`} /></div>
+                        <h4 className="text-xl font-bold text-gray-900">{subject.name}</h4>
+                        <p className="text-sm text-gray-500 mt-2 flex-grow">{subject.description}</p>
+                        <div className="w-full flex justify-center space-x-6 mt-6 pt-4 border-t">
+                          <div className="flex items-center space-x-2 text-sm text-gray-600"><FileText className="w-4 h-4" /><span>5 Soal</span></div>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600"><Clock className="w-4 h-4" /><span>10 Menit</span></div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div key="confirmation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900">Konfirmasi Simulasi</h2>
+                <p className="mt-2 text-gray-600">Anda akan memulai simulasi untuk mata pelajaran:</p>
+                <div className={`my-6 p-6 rounded-lg ${category === 'wajib' ? 'bg-blue-50' : 'bg-green-50'}`}>
+                  <h3 className={`text-3xl font-bold ${titleColor}`}>{selectedSubject.name}</h3>
+                  <p className="mt-2 text-gray-700">{selectedSubject.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
+                  <div className="font-semibold text-gray-800">Jumlah Soal:</div><div className="text-gray-600">5 Soal</div>
+                  <div className="font-semibold text-gray-800">Alokasi Waktu:</div><div className="text-gray-600">10 Menit</div>
+                  <div className="font-semibold text-gray-800">Kategori:</div><div className="text-gray-600">{pageTitle}</div>
+                </div>
+                <div className="mt-8 flex justify-between items-center">
+                  <button onClick={() => setSelectedSubject(null)} className="flex items-center space-x-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                    <ArrowLeft className="w-5 h-5" /><span>Batal</span>
+                  </button>
+                  <button onClick={() => navigate(`/exam/${selectedSubject.id}`)} className="flex items-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    <span>Mulai Simulasi</span><Play className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
