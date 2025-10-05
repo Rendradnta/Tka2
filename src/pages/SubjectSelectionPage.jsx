@@ -1,259 +1,86 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, Calculator, Globe, Atom, FlaskConical, ArrowRight, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, BookOpen, Calculator, Globe, Atom, FlaskConical, Play } from 'lucide-react';
 
 const SubjectSelectionPage = () => {
   const navigate = useNavigate();
-  const [selectedType, setSelectedType] = useState(null);
-  const [selectedSubject, setSelectedSubject] = useState(null);
+  const { category } = useParams(); // Mengambil parameter dari URL
 
-  const subjectTypes = [
-    {
-      id: 'wajib',
-      title: 'Mata Pelajaran Wajib',
-      description: 'Simulasi untuk mata pelajaran yang wajib diikuti semua peserta',
-      color: 'bg-blue-600',
-      hoverColor: 'hover:bg-blue-700',
-      subjects: [
-        { id: 'matematika', name: 'Matematika', icon: Calculator, description: 'Aljabar, Geometri, Kalkulus Dasar' },
-        { id: 'bahasa-indonesia', name: 'Bahasa Indonesia', icon: BookOpen, description: 'Tata Bahasa, Sastra, Pemahaman Bacaan' },
-        { id: 'bahasa-inggris', name: 'Bahasa Inggris', icon: Globe, description: 'Grammar, Vocabulary, Reading Comprehension' }
-      ]
-    },
-    {
-      id: 'pilihan',
-      title: 'Mata Pelajaran Pilihan',
-      description: 'Simulasi untuk mata pelajaran sesuai minat dan jurusan',
-      color: 'bg-green-600',
-      hoverColor: 'hover:bg-green-700',
-      subjects: [
-        { id: 'matematika-lanjut', name: 'Matematika Lanjut', icon: Calculator, description: 'Kalkulus, Statistika, Geometri Analitik' },
-        { id: 'geografi', name: 'Geografi', icon: Globe, description: 'Geografi Fisik, Manusia, dan Regional' },
-        { id: 'fisika', name: 'Fisika', icon: Atom, description: 'Mekanika, Termodinamika, Gelombang' },
-        { id: 'kimia', name: 'Kimia', icon: FlaskConical, description: 'Kimia Anorganik, Organik, Fisika Kimia' }
-      ]
-    }
+  const allSubjects = [
+    { category: 'wajib', id: 'matematika', name: 'Matematika', icon: Calculator, description: 'Aljabar, Geometri, Kalkulus Dasar' },
+    { category: 'wajib', id: 'bahasa-indonesia', name: 'Bahasa Indonesia', icon: BookOpen, description: 'Tata Bahasa & Pemahaman Bacaan' },
+    { category: 'wajib', id: 'bahasa-inggris', name: 'Bahasa Inggris', icon: Globe, description: 'Grammar & Reading Comprehension' },
+    { category: 'pilihan', id: 'matematika-lanjut', name: 'Matematika Lanjut', icon: Calculator, description: 'Kalkulus & Statistika' },
+    { category: 'pilihan', id: 'geografi', name: 'Geografi', icon: Globe, description: 'Geografi Fisik & Manusia' },
+    { category: 'pilihan', id: 'fisika', name: 'Fisika', icon: Atom, description: 'Mekanika & Termodinamika' },
+    { category: 'pilihan', id: 'kimia', name: 'Kimia', icon: FlaskConical, description: 'Kimia Anorganik & Organik' }
   ];
 
-  const handleTypeSelect = (typeId) => {
-    setSelectedType(typeId);
-    setSelectedSubject(null);
-  };
-
-  const handleSubjectSelect = (subjectId) => {
-    setSelectedSubject(subjectId);
-  };
-
-  const handleStartExam = () => {
-    if (selectedSubject) {
-      navigate(`/exam/${selectedSubject}`);
-    }
-  };
-
-  const selectedTypeData = subjectTypes.find(type => type.id === selectedType);
+  // Filter mata pelajaran berdasarkan kategori dari URL
+  const subjectsToShow = allSubjects.filter(subject => subject.category === category);
+  const pageTitle = category === 'wajib' ? 'Mata Pelajaran Wajib' : 'Mata Pelajaran Pilihan';
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <img 
-                src="https://raw.githubusercontent.com/Rendradnta/BoboiboyDB/main/database/7beaae1d85aa9e9f.jpeg" 
-                alt="RESABELAJAR Logo" 
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              <img src="https://raw.githubusercontent.com/Rendradnta/BoboiboyDB/main/database/7beaae1d85aa9e9f.jpeg" alt="RESABELAJAR Logo" className="w-10 h-10 rounded-full object-cover"/>
               <div>
-                <h1 className="text-xl font-bold text-gray-800">RESABELAJAR</h1>
-                <p className="text-sm text-gray-600">Pilih Mata Pelajaran Simulasi TKA</p>
+                <h1 className="text-xl font-bold text-gray-800">{pageTitle}</h1>
+                <p className="text-sm text-gray-600">Pilih salah satu untuk memulai simulasi</p>
               </div>
             </div>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
+            <button onClick={() => navigate('/dashboard')} className="flex items-center space-x-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+              <ArrowLeft className="w-5 h-5" />
               <span>Kembali</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Step 1: Select Subject Type */}
-        {!selectedType && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Pilih Jenis Mata Pelajaran
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Silakan pilih jenis mata pelajaran yang ingin Anda ikuti untuk simulasi TKA
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {subjectTypes.map((type) => (
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {subjectsToShow.map((subject, index) => {
+              const IconComponent = subject.icon;
+              return (
                 <motion.div
-                  key={type.id}
+                  key={subject.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: type.id === 'wajib' ? 0.2 : 0.4 }}
-                  className={`${type.color} ${type.hoverColor} text-white rounded-lg p-8 cursor-pointer transition-all duration-300 transform hover:scale-105 shadow-lg`}
-                  onClick={() => handleTypeSelect(type.id)}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                  className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col"
                 >
-                  <div className="text-center">
-                    <div className="bg-white bg-opacity-20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="w-8 h-8" />
+                  <div className="p-6 flex-grow">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h4 className="text-xl font-semibold text-gray-900">{subject.name}</h4>
+                        <p className="text-sm text-gray-500 mt-1">{subject.description}</p>
+                      </div>
+                      <div className="bg-gray-100 p-3 rounded-lg">
+                        <IconComponent className="w-6 h-6 text-gray-600" />
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-bold mb-3">{type.title}</h3>
-                    <p className="text-lg opacity-90 mb-4">{type.description}</p>
-                    <div className="text-sm opacity-80">
-                      {type.subjects.length} mata pelajaran tersedia
-                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 border-t">
+                    <button
+                      onClick={() => navigate(`/exam/${subject.id}`)}
+                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <Play className="w-4 h-4" />
+                      <span>Mulai Simulasi</span>
+                    </button>
                   </div>
                 </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Step 2: Select Specific Subject */}
-        {selectedType && !selectedSubject && selectedTypeData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {selectedTypeData.title}
-              </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Pilih mata pelajaran yang ingin Anda ikuti untuk simulasi
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {selectedTypeData.subjects.map((subject) => {
-                const IconComponent = subject.icon;
-                return (
-                  <motion.div
-                    key={subject.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="bg-white rounded-lg shadow-md border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-                    onClick={() => handleSubjectSelect(subject.id)}
-                  >
-                    <div className="text-center">
-                      <div className={`${selectedTypeData.color} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4`}>
-                        <IconComponent className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{subject.name}</h3>
-                      <p className="text-gray-600 text-sm mb-4">{subject.description}</p>
-                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-                        <span>5 soal</span>
-                        <span>•</span>
-                        <span>10 menit</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() => setSelectedType(null)}
-                className="flex items-center space-x-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Kembali ke Pilihan Jenis</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Step 3: Confirm Selection */}
-        {selectedSubject && selectedTypeData && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-lg shadow-lg p-8">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    Konfirmasi Pilihan
-                  </h2>
-                  <p className="text-gray-600">
-                    Anda akan mengikuti simulasi untuk mata pelajaran berikut:
-                  </p>
-                </div>
-
-                <div className={`${selectedTypeData.color} rounded-lg p-6 text-white mb-8`}>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold mb-2">
-                      {selectedTypeData.subjects.find(s => s.id === selectedSubject)?.name}
-                    </h3>
-                    <p className="text-lg opacity-90 mb-4">
-                      {selectedTypeData.subjects.find(s => s.id === selectedSubject)?.description}
-                    </p>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <div className="text-2xl font-bold">5</div>
-                        <div className="text-sm opacity-80">Soal</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold">10</div>
-                        <div className="text-sm opacity-80">Menit</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold">3</div>
-                        <div className="text-sm opacity-80">Jenis Soal</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-                  <h4 className="font-semibold text-blue-900 mb-2">Jenis Soal:</h4>
-                  <ul className="text-blue-800 text-sm space-y-1">
-                    <li>• Pilihan Ganda (lingkaran) - pilih satu jawaban benar</li>
-                    <li>• Pilihan Ganda Kompleks (kotak) - pilih beberapa jawaban benar</li>
-                    <li>• Benar Salah - tentukan pernyataan benar atau salah</li>
-                  </ul>
-                </div>
-
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => setSelectedSubject(null)}
-                    className="flex items-center space-x-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Kembali</span>
-                  </button>
-                  <button
-                    onClick={handleStartExam}
-                    className="flex items-center space-x-2 px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
-                  >
-                    <span>Mulai Simulasi</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </main>
     </div>
   );
 };
