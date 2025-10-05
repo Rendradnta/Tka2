@@ -1,23 +1,22 @@
 import React from 'react';
-import { LogOut, User, BookOpen, Play } from 'lucide-react';
+import { LogOut, User, BookOpen, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Dashboard = ({ userName, onLogout }) => {
   const navigate = useNavigate();
 
-  // Data untuk ditampilkan di kartu
   const subjectCategories = {
     wajib: {
       title: 'Mata Pelajaran Wajib',
-      description: 'Simulasi untuk mata pelajaran inti yang wajib diikuti.',
+      description: 'Mata pelajaran inti yang harus diikuti oleh semua peserta.',
       subjects: ['Matematika', 'B. Indonesia', 'B. Inggris'],
       color: 'bg-blue-600',
       hoverColor: 'hover:bg-blue-700',
     },
     pilihan: {
       title: 'Mata Pelajaran Pilihan',
-      description: 'Simulasi untuk mata pelajaran sesuai minat dan jurusan.',
+      description: 'Mata pelajaran peminatan sesuai dengan jurusan.',
       subjects: ['Matematika Lanjut', 'Geografi', 'Fisika', 'Kimia'],
       color: 'bg-green-600',
       hoverColor: 'hover:bg-green-700',
@@ -54,7 +53,7 @@ const Dashboard = ({ userName, onLogout }) => {
           </div>
         </motion.div>
 
-        {/* Category Selection */}
+        {/* Category Selection with new design */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {Object.keys(subjectCategories).map((key) => {
@@ -62,24 +61,31 @@ const Dashboard = ({ userName, onLogout }) => {
               return (
                 <motion.div
                   key={key}
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ y: -5 }}
                   transition={{ type: 'spring', stiffness: 300 }}
-                  onClick={() => navigate(`/subject-selection/${key}`)} // Navigasi dengan parameter
-                  className={`${category.color} ${category.hoverColor} text-white rounded-lg p-8 cursor-pointer transition-colors duration-300 shadow-xl flex flex-col justify-between`}
+                  className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
                 >
-                  <div>
-                    <BookOpen className="w-12 h-12 mb-4 opacity-75" />
-                    <h4 className="text-2xl font-bold mb-2">{category.title}</h4>
-                    <p className="opacity-90 mb-6">{category.description}</p>
-                    <div className="flex flex-wrap gap-2">
+                  <div className={`p-8 text-center text-white ${category.color}`}>
+                    <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-80" />
+                    <h3 className="text-2xl font-bold">{category.title}</h3>
+                    <p className="mt-2 text-sm opacity-90">{category.description}</p>
+                  </div>
+                  <div className="p-6 flex-grow flex flex-col">
+                    <p className="text-sm font-semibold text-gray-500 mb-3 text-center">Mata Pelajaran:</p>
+                    <div className="flex flex-wrap gap-2 justify-center mb-6">
                       {category.subjects.map(subject => (
-                        <span key={subject} className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">{subject}</span>
+                        <span key={subject} className="text-xs font-medium bg-gray-200 text-gray-700 px-2.5 py-1 rounded-full">{subject}</span>
                       ))}
                     </div>
-                  </div>
-                  <div className="flex items-center justify-end mt-6 text-sm font-semibold opacity-80">
-                    <span>Pilih Kategori</span>
-                    <Play className="w-4 h-4 ml-2" />
+                    <div className="mt-auto pt-4">
+                      <button 
+                        onClick={() => navigate(`/subject-selection/${key}`)}
+                        className={`w-full flex items-center justify-center space-x-2 px-4 py-3 font-semibold text-white rounded-lg transition-colors ${category.color} ${category.hoverColor}`}
+                      >
+                        <span>Pilih Mata Pelajaran</span>
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               );
