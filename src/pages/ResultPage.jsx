@@ -129,7 +129,7 @@ const ResultPage = () => {
           <div className="text-center">
             <div className={`text-6xl font-bold mb-4 ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>{Math.round(score)}</div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Skor Anda</h2>
-            <p className="text-gray-600 mb-6">{score >= 80 ? 'Excellent! Hasil yang sangat baik.' : score >= 60 ? 'Good! Hasil yang cukup baik.' : 'Perlu lebih banyak latihan.'}</p>
+            <p className="text-gray-600 mb-6">{score >= 80 ? 'Kelass! Keren kamuu.' : score >= 60 ? 'Masih Jelek! Belajar lagi dek.' : 'SDM rendah!!'}</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
               <div className="bg-white rounded-lg p-4 shadow-sm"><CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" /><div className="text-2xl font-bold text-gray-900">{fullExamData.questions.filter(q => getAnswerStatus(q) === 'correct').length}</div><div className="text-sm text-gray-600">Benar</div></div>
               <div className="bg-white rounded-lg p-4 shadow-sm"><XCircle className="w-6 h-6 text-red-600 mx-auto mb-2" /><div className="text-2xl font-bold text-gray-900">{fullExamData.questions.filter(q => getAnswerStatus(q) === 'incorrect').length}</div><div className="text-sm text-gray-600">Salah</div></div>
