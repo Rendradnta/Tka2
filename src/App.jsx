@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import TokenAuth from './components/TokenAuth'
-import Dashboard from './components/Dashboard'
-import ExamPage from './pages/ExamPage'
-import ResultPage from './pages/ResultPage'
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import TokenAuth from './components/TokenAuth';
+import Dashboard from './components/Dashboard';
+import ExamPage from './pages/ExamPage';
+import ResultPage from './pages/ResultPage';
 import SubjectSelectionPage from './pages/SubjectSelectionPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -16,7 +16,6 @@ const App = () => {
     if (authData) {
       try {
         const parsed = JSON.parse(authData);
-        // Check if token is still valid (24 hours)
         const isExpired = Date.now() - parsed.timestamp > 24 * 60 * 60 * 1000;
         if (!isExpired) {
           setIsAuthenticated(true);
@@ -51,7 +50,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Dashboard userName={userName} onLogout={handleLogout} />} />
         <Route path="/dashboard" element={<Dashboard userName={userName} onLogout={handleLogout} />} />
-        <Route path="/subject-selection" element={<SubjectSelectionPage />} />
+        {/* PERUBAHAN DI SINI: Menambahkan :category sebagai parameter */}
+        <Route path="/subject-selection/:category" element={<SubjectSelectionPage />} />
         <Route path="/exam/:subjectId" element={<ExamPage />} />
         <Route path="/result/:subjectId" element={<ResultPage />} />
         <Route path="*" element={<NotFoundPage />} />
