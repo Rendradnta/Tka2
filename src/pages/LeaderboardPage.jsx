@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Award, Trophy, UserCircle, Clock, Star } from 'lucide-react';
+import { ArrowLeft, Award, Trophy, User, Clock, Star } from 'lucide-react';
 
 const LeaderboardPage = () => {
   const navigate = useNavigate();
@@ -38,44 +38,38 @@ const LeaderboardPage = () => {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const top3 = leaderboard.slice(0, 3);
-  const rest = leaderboard.slice(3);
-
-  const PodiumItem = ({ user, rank }) => {
-    const styles = {
-      1: { color: 'bg-yellow-400', ring: 'ring-yellow-400', text: 'text-yellow-800', icon: <Trophy size={40} className="fill-yellow-400 text-white" /> },
-      2: { color: 'bg-gray-300', ring: 'ring-gray-300', text: 'text-gray-800', icon: <Trophy size={32} className="fill-gray-400 text-white" /> },
-      3: { color: 'bg-yellow-600', ring: 'ring-yellow-600', text: 'text-yellow-900', icon: <Trophy size={28} className="fill-yellow-700 text-white" /> },
+  const getRankStyling = (rank) => {
+    if (rank === 1) return {
+      card: 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg ring-4 ring-yellow-200',
+      rank: 'bg-white/20 text-white',
+      name: 'text-white',
+      score: 'text-white'
     };
-    const style = styles[rank];
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: rank * 0.15 }}
-        className={`w-full p-6 rounded-xl shadow-lg flex flex-col items-center text-center relative ${style.color}`}
-        style={{ order: rank === 1 ? 2 : (rank === 2 ? 1 : 3) }} // Rank 1 di tengah
-      >
-        <div className={`absolute -top-6 ${rank === 1 ? 'scale-125' : ''}`}>
-          {style.icon}
-        </div>
-        <UserCircle size={rank === 1 ? 80 : 70} className="mt-8 mb-4 text-white/80" />
-        <h3 className={`text-xl font-bold ${style.text}`}>{user.userName}</h3>
-        <div className="mt-4 bg-white/30 backdrop-blur-sm rounded-lg px-4 py-2 w-full">
-          <p className={`text-2xl font-bold ${style.text}`}>{user.score}</p>
-          <p className={`text-xs font-semibold uppercase ${style.text}`}>Skor</p>
-        </div>
-        <div className="mt-2 text-sm text-white/90">{formatTime(user.timeSpent)} menit</div>
-      </motion.div>
-    );
+    if (rank === 2) return {
+      card: 'bg-white border-l-4 border-gray-400',
+      rank: 'bg-gray-200 text-gray-700',
+      name: 'text-gray-800',
+      score: 'text-gray-800'
+    };
+    if (rank === 3) return {
+      card: 'bg-white border-l-4 border-amber-600',
+      rank: 'bg-amber-100 text-amber-800',
+      name: 'text-gray-800',
+      score: 'text-gray-800'
+    };
+    return {
+      card: 'bg-white',
+      rank: 'bg-gray-100 text-gray-600',
+      name: 'text-gray-700',
+      score: 'text-gray-700'
+    };
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-3"><Award className="text-yellow-500" /> Papan Peringkat</h1>
             <button onClick={() => navigate('/dashboard')} className="flex items-center space-x-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium">
@@ -85,7 +79,7 @@ const LeaderboardPage = () => {
         </div>
       </div>
       
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center text-gray-600">Memuat data peringkat...</div>
         ) : error ? (
@@ -93,38 +87,50 @@ const LeaderboardPage = () => {
         ) : leaderboard.length === 0 ? (
           <div className="text-center text-gray-600">Belum ada data peringkat yang tersedia.</div>
         ) : (
-          <>
-            {/* Podium for Top 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-2 items-end mb-12">
-              {top3.map(user => <PodiumItem key={user.rank} user={user} rank={user.rank} />)}
-            </div>
-            
-            {/* List for the rest */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="space-y-3"
-            >
-              {rest.map((user, index) => (
-                <div key={index} className="bg-white rounded-lg shadow p-4 flex items-center justify-between transition-transform hover:scale-102">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-gray-100 text-gray-700">
-                      {user.rank}
-                    </div>
-                    <div>
-                      <div className="font-bold text-gray-800">{user.userName}</div>
-                      <div className="text-sm text-gray-500 flex items-center gap-1"><Star size={12} className="text-yellow-500" /> Skor: {user.score}</div>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: { transition: { staggerChildren: 0.08 } }
+            }}
+            className="space-y-4"
+          >
+            {leaderboard.map((user) => {
+              const styling = getRankStyling(user.rank);
+              const isChampion = user.rank === 1;
+
+              return (
+                <motion.div
+                  key={user.rank}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { opacity: 1, y: 0 }
+                  }}
+                  className={`rounded-xl shadow-md p-4 flex items-center ${styling.card}`}
+                >
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${styling.rank}`}>
+                    {user.rank}
+                  </div>
+                  
+                  <div className="ml-4 flex-grow">
+                    <div className={`font-bold text-lg ${styling.name}`}>{user.userName}</div>
+                    <div className="flex items-center gap-4 text-sm mt-1">
+                      <span className={`flex items-center gap-1.5 font-semibold ${styling.score}`}>
+                        <Star size={14} className={isChampion ? 'text-white' : 'text-yellow-500'} /> 
+                        {user.score}
+                      </span>
+                      <span className={`flex items-center gap-1.5 ${isChampion ? 'text-white/80' : 'text-gray-500'}`}>
+                        <Clock size={14} /> 
+                        {formatTime(user.timeSpent)}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-700">{formatTime(user.timeSpent)}</div>
-                    <div className="text-xs text-gray-400">Menit</div>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          </>
+
+                  {isChampion && <Trophy size={40} className="text-yellow-300 opacity-80 flex-shrink-0 ml-4" />}
+                </motion.div>
+              );
+            })}
+          </motion.div>
         )}
       </main>
     </div>
