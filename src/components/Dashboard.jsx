@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, FileText, LogOut, User, Play, ChevronRight } from 'lucide-react';
+import { BookOpen, FileText, LogOut, User, Play, ChevronRight, Award, History } from 'lucide-react'; // Ikon baru ditambahkan
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -43,10 +43,28 @@ const Dashboard = ({ userName, onLogout }) => {
                 <p className="text-sm text-gray-600">Aplikasi TKA - SMA Sederajat</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-gray-700"><User className="w-5 h-5" /><span className="font-medium">{userName}</span></div>
-              <button onClick={onLogout} className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"><LogOut className="w-4 h-4" /><span>Keluar</span></button>
+
+            {/* --- PERUBAHAN DI SINI: Navigasi ditambahkan --- */}
+            <div className="flex items-center space-x-4 sm:space-x-6">
+              <button onClick={() => navigate('/leaderboard')} className="flex items-center space-x-2 text-gray-600 font-medium hover:text-blue-600 transition-colors">
+                <Award className="w-5 h-5" />
+                <span>Peringkat</span>
+              </button>
+              <button onClick={() => navigate('/history')} className="flex items-center space-x-2 text-gray-600 font-medium hover:text-blue-600 transition-colors">
+                <History className="w-5 h-5" />
+                <span>Riwayat</span>
+              </button>
+              <div className="flex items-center space-x-2 text-gray-700 border-l pl-4 sm:pl-6">
+                <User className="w-5 h-5" />
+                <span className="font-medium">{userName}</span>
+              </div>
+              <button onClick={onLogout} className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <LogOut className="w-4 h-4" />
+                <span>Keluar</span>
+              </button>
             </div>
+            {/* --- AKHIR PERUBAHAN --- */}
+            
           </div>
         </div>
       </div>
@@ -79,13 +97,13 @@ const Dashboard = ({ userName, onLogout }) => {
         {/* Subject Categories Section */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Pilih Jenis Simulasi</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-a uto">
             {subjectCategories.map((category) => (
               <motion.div
                 key={category.id}
                 whileHover={{ y: -5 }}
                 transition={{ type: 'spring', stiffness: 300 }}
-                onClick={() => navigate(`/subject-selection/${category.id}`)} // Navigasi yang benar
+                onClick={() => navigate(`/subject-selection/${category.id}`)}
                 className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col cursor-pointer"
               >
                 <div className={`p-8 text-center text-white ${category.color}`}>
