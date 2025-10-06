@@ -1,26 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, BookOpen, Calculator, Globe, Atom, FlaskConical, Play, Clock, FileText } from 'lucide-react';
 
+// Helper untuk menambahkan detail (nama, ikon, kategori) ke data dari API
+const subjectDetailsMap = {
+  'matematika': { category: 'wajib', name: 'Matematika', icon: Calculator, description: 'Aljabar, Geometri, Kalkulus Dasar' },
+  'bahasa-indonesia': { category: 'wajib', name: 'Bahasa Indonesia', icon: BookOpen, description: 'Tata Bahasa & Pemahaman Bacaan' },
+  'geografi': { category: 'pilihan', name: 'Geografi', icon: Globe, description: 'Geografi Fisik & Manusia' },
+  'fisika': { category: 'pilihan', name: 'Fisika', icon: Atom, description: 'Mekanika & Termodinamika' },
+  // Tambahkan mapel lain di sini jika API Anda menyediakannya
+};
+
 const SubjectSelectionPage = () => {
   const navigate = useNavigate();
   const { category } = useParams();
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState(null);
 
-  const allSubjects = [
-    { category: 'wajib', id: 'matematika', name: 'Matematika', icon: Calculator, description: 'Aljabar, Geometri, Kalkulus Dasar' },
-    { category: 'wajib', id: 'bahasa-indonesia', name: 'Bahasa Indonesia', icon: BookOpen, description: 'Tata Bahasa & Pemahaman Bacaan' },
-    { category: 'wajib', id: 'bahasa-inggris', name: 'Bahasa Inggris', icon: Globe, description: 'Grammar & Reading Comprehension' },
-    { category: 'pilihan', id: 'matematika-lanjut', name: 'Matematika Lanjut', icon: Calculator, description: 'Kalkulus & Statistika' },
-    { category: 'pilihan', id: 'geografi', name: 'Geografi', icon: Globe, description: 'Geografi Fisik & Manusia' },
-    { category: 'pilihan', id: 'fisika', name: 'Fisika', icon: Atom, description: 'Mekanika & Termodinamika' },
-    { category: 'pilihan', id: 'kimia', name: 'Kimia', icon: FlaskConical, description: 'Kimia Anorganik & Organik' }
-  ];
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        [cite_start]// Panggil API untuk mendapatkan daftar mata pelajaran [cite: 27]
+        const response = await fetch('https://api-tka.resa.my.id/api/db/soal');
+        const data = await response.json();
+        
+        if (data.status && data.subjects) {
+          // Gabungkan data ID dari API dengan detail dari `subjectDetailsMap`
+          const availableSubjects = data.subjects
+            .map(id => ({
+              id,
+              ...(subjectDetailsMap[id] || { name: id, icon: BookOpen, description: 'Deskripsi tidak tersedia', category: 'lainnya' })
+            }));
+          setSubjects(availableSubjects);
+        } else {
+          throw new Error("Gagal memuat daftar mata pelajaran.");
+        }
+      } catch (error) {
+        console.error("Gagal mengambil daftar mata pelajaran:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSubjects();
+  }, []);
 
-  const subjectsToShow = allSubjects.filter(subject => subject.category === category);
+  // Filter mata pelajaran berdasarkan kategori dari URL
+  const subjectsToShow = subjects.filter(subject => subject.category === category);
   const pageTitle = category === 'wajib' ? 'Mata Pelajaran Wajib' : 'Mata Pelajaran Pilihan';
   const titleColor = category === 'wajib' ? 'text-blue-600' : 'text-green-600';
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat mata pelajaran...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -59,8 +99,9 @@ const SubjectSelectionPage = () => {
                         <h4 className="text-xl font-bold text-gray-900">{subject.name}</h4>
                         <p className="text-sm text-gray-500 mt-2 flex-grow">{subject.description}</p>
                         <div className="w-full flex justify-center space-x-6 mt-6 pt-4 border-t">
-                          <div className="flex items-center space-x-2 text-sm text-gray-600"><FileText className="w-4 h-4" /><span>5 Soal</span></div>
-                          <div className="flex items-center space-x-2 text-sm text-gray-600"><Clock className="w-4 h-4" /><span>10 Menit</span></div>
+                          {/* Diperbarui sesuai dokumentasi API */}
+                          [cite_start]<div className="flex items-center space-x-2 text-sm text-gray-600"><FileText className="w-4 h-4" /><span>30 Soal</span></div> [cite: 29]
+                          [cite_start]<div className="flex items-center space-x-2 text-sm text-gray-600"><Clock className="w-4 h-4" /><span>30 Menit</span></div> [cite: 29]
                         </div>
                       </div>
                     </motion.div>
@@ -78,8 +119,9 @@ const SubjectSelectionPage = () => {
                   <p className="mt-2 text-gray-700">{selectedSubject.description}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
-                  <div className="font-semibold text-gray-800">Jumlah Soal:</div><div className="text-gray-600">5 Soal</div>
-                  <div className="font-semibold text-gray-800">Alokasi Waktu:</div><div className="text-gray-600">10 Menit</div>
+                   {/* Diperbarui sesuai dokumentasi API */}
+                  [cite_start]<div className="font-semibold text-gray-800">Jumlah Soal:</div><div className="text-gray-600">30 Soal</div> [cite: 29]
+                  [cite_start]<div className="font-semibold text-gray-800">Alokasi Waktu:</div><div className="text-gray-600">30 Menit</div> [cite: 29]
                   <div className="font-semibold text-gray-800">Kategori:</div><div className="text-gray-600">{pageTitle}</div>
                 </div>
                 <div className="mt-8 flex justify-between items-center">

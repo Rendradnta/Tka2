@@ -1,31 +1,44 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Clock, Flag, ArrowLeft, ArrowRight, CheckCircle, Square, Circle } from 'lucide-react';
-import examData from '../utils/examData';
-const { generateExamData } = examData;
 import { TextWithMath } from '../components/MathRenderer';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 const ExamPage = () => {
   const { subjectId } = useParams();
   const navigate = useNavigate();
+  const [exam, setExam] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [flagged, setFlagged] = useState(new Set());
   const [timeLeft, setTimeLeft] = useState(0);
-  const [exam, setExam] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
-    try {
-      const examData = generateExamData(subjectId);
-      setExam(examData);
-      setTimeLeft(examData.duration * 60); // Konversi durasi menit ke detik
-    } catch (error) {
-      console.error('Error generating exam:', error);
-      navigate('/subject-selection');
-    }
+    const fetchExam = async () => {
+      try {
+        // Panggil API untuk mendapatkan set ujian berdasarkan subjectId
+        const response = await fetch(`https://api-tka.resa.my.id/api/db/soal?subjectId=${subjectId}`);
+        const data = await response.json();
+        
+        if (data.status) {
+          setExam(data); // Simpan seluruh data ujian dari API
+          setTimeLeft(data.duration * 60); // Atur waktu dari durasi yang diberikan API
+        } else {
+          throw new Error(data.error || 'Gagal memuat data ujian.');
+        }
+      } catch (error) {
+        console.error('Gagal memuat ujian:', error);
+        // Jika gagal, kembalikan pengguna ke halaman pemilihan mapel
+        navigate('/subject-selection/wajib'); 
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchExam();
   }, [subjectId, navigate]);
 
   useEffect(() => {
@@ -82,15 +95,16 @@ const ExamPage = () => {
     const results = {
       examId: exam.id,
       examTitle: exam.title,
-      subject: exam.subject,
+      subject: exam.id, // Gunakan exam.id dari API sebagai subject
       answers,
-      questions: exam.questions.map(({ explanation, ...rest }) => rest), // Hapus `explanation` dari local storage
+      // PENTING: Simpan semua data soal agar ResultPage bisa mengakses kunci jawaban & pembahasan
+      questions: exam.questions,
       totalQuestions: exam.questions.length,
       timeSpent: (exam.duration * 60) - timeLeft,
       submittedAt: new Date().toISOString()
     };
     localStorage.setItem('examResults', JSON.stringify(results));
-    navigate(`/result/${exam.subject}`);
+    navigate(`/result/${exam.id}`);
   };
 
   const handleFinishClick = () => setShowConfirmModal(true);
@@ -100,7 +114,7 @@ const ExamPage = () => {
     if (flagged.has(questionId)) return 'flagged';
     if (answers.hasOwnProperty(questionId)) {
         const answer = answers[questionId];
-        if (typeof answer === 'object' && Object.keys(answer).length === 0) return 'unanswered';
+        if (typeof answer === 'object' && answer !== null && Object.keys(answer).length === 0) return 'unanswered';
         if (Array.isArray(answer) && answer.length === 0) return 'unanswered';
         return 'answered';
     }
@@ -188,12 +202,12 @@ const ExamPage = () => {
     }
   };
 
-  if (!exam) {
+  if (loading || !exam) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat simulasi...</p>
+          <p className="text-gray-600">Menyiapkan soal ujian...</p>
         </div>
       </div>
     );

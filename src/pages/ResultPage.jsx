@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, BookOpen, Home, RotateCcw, Award } from 'lucide-react';
-
-import examData from '../utils/examData';
-const { questionPools } = examData;
-
+import { CheckCircle, XCircle, Clock, BookOpen, Home, RotateCcw, Award, UserCheck, UserX, HelpCircle } from 'lucide-react';
 import { TextWithMath } from '../components/MathRenderer';
 
 // Helper function untuk membandingkan jawaban
 const areAnswersEqual = (userAnswer, correctAnswer, questionType, statements = []) => {
   if (questionType === 'multiple-true-false') {
     if (typeof userAnswer !== 'object' || userAnswer === null) return false;
-    if (statements.length !== Object.keys(userAnswer).length) return false;
+    if (statements.length > 0 && statements.length !== Object.keys(userAnswer).length) return false;
     return statements.every((statement, index) => userAnswer[index] === statement.answer);
   }
   if (Array.isArray(correctAnswer)) {
@@ -32,34 +28,22 @@ const ResultPage = () => {
   const [fullExamData, setFullExamData] = useState(null);
   const [score, setScore] = useState(0);
   const [showExplanations, setShowExplanations] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(true); // State untuk proses pengiriman
+  const [isSubmitting, setIsSubmitting] = useState(true);
 
   useEffect(() => {
     const processResults = async () => {
       try {
         const savedResults = localStorage.getItem('examResults');
-        const questionMaster = questionPools[subjectId];
 
-        if (savedResults && questionMaster) {
+        if (savedResults) {
           const parsedResults = JSON.parse(savedResults);
           
           if (parsedResults.subject === subjectId) {
+            // Data dari localStorage sudah lengkap, tidak perlu mencocokkan dengan file lokal lagi
             setResults(parsedResults);
-
-            const hydratedQuestions = parsedResults.questions
-              .map(qFromStorage => {
-                const originalQuestion = questionMaster.find(qMaster => qMaster.id === qFromStorage.id);
-                return originalQuestion ? { ...originalQuestion, ...qFromStorage } : null;
-              })
-              .filter(Boolean);
-
-            const examObject = {
-              id: parsedResults.examId,
-              title: parsedResults.examTitle,
-              questions: hydratedQuestions,
-            };
-            setFullExamData(examObject);
+            setFullExamData(parsedResults);
             
+            const examObject = parsedResults;
             let correctAnswers = 0;
             examObject.questions.forEach(question => {
               const userAnswer = parsedResults.answers[question.id];
@@ -71,7 +55,7 @@ const ResultPage = () => {
             const finalScore = examObject.questions.length > 0 ? (correctAnswers / examObject.questions.length) * 100 : 0;
             setScore(finalScore);
 
-            // --- PENGIRIMAN SKOR KE API DIMULAI DI SINI ---
+            // --- PENGIRIMAN SKOR KE API ---
             const authData = JSON.parse(localStorage.getItem('userAuth'));
             const userName = authData ? authData.name : "Guest";
             const scoreToSubmit = Math.round(finalScore);
@@ -82,8 +66,8 @@ const ResultPage = () => {
             const formattedTime = `${mins}:${secs}`;
 
             const params = new URLSearchParams({
-              userName: userName,
-              subjectId: subjectId,
+              userName,
+              subjectId,
               score: scoreToSubmit,
               timeSpent: formattedTime,
             });
@@ -92,18 +76,13 @@ const ResultPage = () => {
 
             try {
               const response = await fetch(url);
-              if (!response.ok) {
-                console.error("API Error:", await response.json());
-              } else {
-                console.log("Skor berhasil dikirim ke API:", await response.json());
-              }
+              if (!response.ok) console.error("API Error:", await response.json());
+              else console.log("Skor berhasil dikirim ke API:", await response.json());
             } catch (error) {
               console.error("Gagal menghubungi server API:", error);
             } finally {
-              setIsSubmitting(false); // Selesai mengirim, hentikan loading
+              setIsSubmitting(false);
             }
-            // --- PENGIRIMAN SKOR SELESAI ---
-
           } else {
             navigate('/dashboard');
           }
@@ -115,7 +94,6 @@ const ResultPage = () => {
         navigate('/dashboard');
       }
     };
-
     processResults();
   }, [subjectId, navigate]);
 
@@ -143,21 +121,17 @@ const ResultPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+          <div className="flex flex-wrap gap-y-4 justify-between items-center">
             <div className="flex items-center space-x-4">
               <img src="https://raw.githubusercontent.com/Rendradnta/BoboiboyDB/main/database/7beaae1d85aa9e9f.jpeg" alt="RESABELAJAR Logo" className="w-10 h-10 rounded-full object-cover" />
               <div>
-                <h1 className="text-xl font-bold text-gray-800">{fullExamData.title}</h1>
+                <h1 className="text-xl font-bold text-gray-800">{fullExamData.examTitle}</h1>
                 <p className="text-sm text-gray-600">RESABELAJAR - Hasil Simulasi</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <button onClick={() => navigate('/dashboard')} className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <Home className="w-4 h-4" /><span>Dashboard</span>
-              </button>
-              <button onClick={() => navigate(`/exam/${subjectId}`)} className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                <RotateCcw className="w-4 h-4" /><span>Ulangi</span>
-              </button>
+            <div className="flex items-center flex-wrap justify-end gap-x-3 gap-y-2">
+              <button onClick={() => navigate('/dashboard')} className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"><Home className="w-4 h-4" /><span>Dashboard</span></button>
+              <button onClick={() => navigate(`/exam/${subjectId}`)} className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"><RotateCcw className="w-4 h-4" /><span>Ulangi</span></button>
             </div>
           </div>
         </div>
@@ -169,7 +143,7 @@ const ResultPage = () => {
             <div className={`text-6xl font-bold mb-4 ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>{Math.round(score)}</div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Skor Anda</h2>
             <p className="text-gray-600 mb-6">{score >= 80 ? 'Kelass! Keren kamuu.' : score >= 60 ? 'Masih Jelek! Belajar lagi dek.' : 'SDM rendah!!'}</p>
-            {isSubmitting && <p className="text-sm text-gray-500 animate-pulse">Mengirim skor ke server...</p>}
+            {!isSubmitting ? (<p className="text-sm text-green-600">Skor berhasil dikirim ke server.</p>) : (<p className="text-sm text-gray-500 animate-pulse">Mengirim skor ke server...</p>)}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mt-4">
               <div className="bg-white rounded-lg p-4 shadow-sm"><CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" /><div className="text-2xl font-bold text-gray-900">{fullExamData.questions.filter(q => getAnswerStatus(q) === 'correct').length}</div><div className="text-sm text-gray-600">Benar</div></div>
               <div className="bg-white rounded-lg p-4 shadow-sm"><XCircle className="w-6 h-6 text-red-600 mx-auto mb-2" /><div className="text-2xl font-bold text-gray-900">{fullExamData.questions.filter(q => getAnswerStatus(q) === 'incorrect').length}</div><div className="text-sm text-gray-600">Salah</div></div>
@@ -179,7 +153,6 @@ const ResultPage = () => {
           </div>
         </motion.div>
         
-        {/* TOMBOL NAVIGASI BARU */}
         <div className="flex justify-between items-center mb-6">
             <button onClick={() => setShowExplanations(!showExplanations)} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 {showExplanations ? 'Sembunyikan' : 'Tampilkan'} Pembahasan
@@ -193,7 +166,6 @@ const ResultPage = () => {
         {showExplanations && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
             {fullExamData.questions.map((question, index) => {
-              const status = getAnswerStatus(question);
               const userAnswer = results.answers[question.id];
               return (
                 <div key={question.id} className="bg-white rounded-lg shadow-md p-6">
