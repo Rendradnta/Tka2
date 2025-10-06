@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'; // Sesuai permintaan Anda
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, BookOpen, Home, RotateCcw, UserCheck, UserX, HelpCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, BookOpen, Home, RotateCcw, Award } from 'lucide-react';
 
 import examData from '../utils/examData';
 const { questionPools } = examData;
@@ -32,52 +32,91 @@ const ResultPage = () => {
   const [fullExamData, setFullExamData] = useState(null);
   const [score, setScore] = useState(0);
   const [showExplanations, setShowExplanations] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(true); // State untuk proses pengiriman
 
   useEffect(() => {
-    try {
-      const savedResults = localStorage.getItem('examResults');
-      const questionMaster = questionPools[subjectId];
+    const processResults = async () => {
+      try {
+        const savedResults = localStorage.getItem('examResults');
+        const questionMaster = questionPools[subjectId];
 
-      if (savedResults && questionMaster) {
-        const parsedResults = JSON.parse(savedResults);
-        
-        if (parsedResults.subject === subjectId) {
-          setResults(parsedResults);
-
-          const hydratedQuestions = parsedResults.questions
-            .map(qFromStorage => {
-              const originalQuestion = questionMaster.find(qMaster => qMaster.id === qFromStorage.id);
-              return originalQuestion ? { ...originalQuestion, ...qFromStorage } : null;
-            })
-            .filter(Boolean);
-
-          const examObject = {
-            id: parsedResults.examId,
-            title: parsedResults.examTitle,
-            questions: hydratedQuestions,
-          };
-          setFullExamData(examObject);
+        if (savedResults && questionMaster) {
+          const parsedResults = JSON.parse(savedResults);
           
-          let correctAnswers = 0;
-          examObject.questions.forEach(question => {
-            const userAnswer = parsedResults.answers[question.id];
-            const correctAnswer = question.type === 'multiple-choice-complex' ? question.correctAnswers : question.correctAnswer;
-            if (areAnswersEqual(userAnswer, correctAnswer, question.type, question.statements)) {
-              correctAnswers++;
-            }
-          });
-          setScore(examObject.questions.length > 0 ? (correctAnswers / examObject.questions.length) * 100 : 0);
+          if (parsedResults.subject === subjectId) {
+            setResults(parsedResults);
 
+            const hydratedQuestions = parsedResults.questions
+              .map(qFromStorage => {
+                const originalQuestion = questionMaster.find(qMaster => qMaster.id === qFromStorage.id);
+                return originalQuestion ? { ...originalQuestion, ...qFromStorage } : null;
+              })
+              .filter(Boolean);
+
+            const examObject = {
+              id: parsedResults.examId,
+              title: parsedResults.examTitle,
+              questions: hydratedQuestions,
+            };
+            setFullExamData(examObject);
+            
+            let correctAnswers = 0;
+            examObject.questions.forEach(question => {
+              const userAnswer = parsedResults.answers[question.id];
+              const correctAnswer = question.type === 'multiple-choice-complex' ? question.correctAnswers : question.correctAnswer;
+              if (areAnswersEqual(userAnswer, correctAnswer, question.type, question.statements)) {
+                correctAnswers++;
+              }
+            });
+            const finalScore = examObject.questions.length > 0 ? (correctAnswers / examObject.questions.length) * 100 : 0;
+            setScore(finalScore);
+
+            // --- PENGIRIMAN SKOR KE API DIMULAI DI SINI ---
+            const authData = JSON.parse(localStorage.getItem('userAuth'));
+            const userName = authData ? authData.name : "Guest";
+            const scoreToSubmit = Math.round(finalScore);
+            const timeInSeconds = parsedResults.timeSpent;
+
+            const mins = String(Math.floor(timeInSeconds / 60)).padStart(2, '0');
+            const secs = String(timeInSeconds % 60).padStart(2, '0');
+            const formattedTime = `${mins}:${secs}`;
+
+            const params = new URLSearchParams({
+              userName: userName,
+              subjectId: subjectId,
+              score: scoreToSubmit,
+              timeSpent: formattedTime,
+            });
+            
+            const url = `https://api-tka.resa.my.id/api/db/score?${params.toString()}`;
+
+            try {
+              const response = await fetch(url);
+              if (!response.ok) {
+                console.error("API Error:", await response.json());
+              } else {
+                console.log("Skor berhasil dikirim ke API:", await response.json());
+              }
+            } catch (error) {
+              console.error("Gagal menghubungi server API:", error);
+            } finally {
+              setIsSubmitting(false); // Selesai mengirim, hentikan loading
+            }
+            // --- PENGIRIMAN SKOR SELESAI ---
+
+          } else {
+            navigate('/dashboard');
+          }
         } else {
           navigate('/dashboard');
         }
-      } else {
+      } catch (e) {
+        console.error("Gagal memproses hasil ujian:", e);
         navigate('/dashboard');
       }
-    } catch (e) {
-      console.error("Gagal memproses hasil ujian:", e);
-      navigate('/dashboard');
-    }
+    };
+
+    processResults();
   }, [subjectId, navigate]);
 
   const getAnswerStatus = (question) => {
@@ -94,7 +133,7 @@ const ResultPage = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat hasil...</p>
+          <p className="text-gray-600">Menghitung hasil dan mengirim skor...</p>
         </div>
       </div>
     );
@@ -130,7 +169,8 @@ const ResultPage = () => {
             <div className={`text-6xl font-bold mb-4 ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>{Math.round(score)}</div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Skor Anda</h2>
             <p className="text-gray-600 mb-6">{score >= 80 ? 'Kelass! Keren kamuu.' : score >= 60 ? 'Masih Jelek! Belajar lagi dek.' : 'SDM rendah!!'}</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+            {isSubmitting && <p className="text-sm text-gray-500 animate-pulse">Mengirim skor ke server...</p>}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mt-4">
               <div className="bg-white rounded-lg p-4 shadow-sm"><CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" /><div className="text-2xl font-bold text-gray-900">{fullExamData.questions.filter(q => getAnswerStatus(q) === 'correct').length}</div><div className="text-sm text-gray-600">Benar</div></div>
               <div className="bg-white rounded-lg p-4 shadow-sm"><XCircle className="w-6 h-6 text-red-600 mx-auto mb-2" /><div className="text-2xl font-bold text-gray-900">{fullExamData.questions.filter(q => getAnswerStatus(q) === 'incorrect').length}</div><div className="text-sm text-gray-600">Salah</div></div>
               <div className="bg-white rounded-lg p-4 shadow-sm"><BookOpen className="w-6 h-6 text-gray-600 mx-auto mb-2" /><div className="text-2xl font-bold text-gray-900">{fullExamData.questions.length}</div><div className="text-sm text-gray-600">Total Soal</div></div>
@@ -138,8 +178,17 @@ const ResultPage = () => {
             </div>
           </div>
         </motion.div>
-
-        <div className="mb-6"><button onClick={() => setShowExplanations(!showExplanations)} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">{showExplanations ? 'Sembunyikan' : 'Tampilkan'} Pembahasan</button></div>
+        
+        {/* TOMBOL NAVIGASI BARU */}
+        <div className="flex justify-between items-center mb-6">
+            <button onClick={() => setShowExplanations(!showExplanations)} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                {showExplanations ? 'Sembunyikan' : 'Tampilkan'} Pembahasan
+            </button>
+            <button onClick={() => navigate('/leaderboard')} className="flex items-center space-x-2 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+                <Award className="w-5 h-5" />
+                <span>Lihat Peringkat</span>
+            </button>
+        </div>
 
         {showExplanations && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
