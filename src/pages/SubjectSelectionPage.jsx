@@ -7,9 +7,11 @@ import { ArrowLeft, BookOpen, Calculator, Globe, Atom, FlaskConical, Play, Clock
 const subjectDetailsMap = {
   'matematika': { category: 'wajib', name: 'Matematika', icon: Calculator, description: 'Aljabar, Geometri, Kalkulus Dasar' },
   'bahasa-indonesia': { category: 'wajib', name: 'Bahasa Indonesia', icon: BookOpen, description: 'Tata Bahasa & Pemahaman Bacaan' },
+  'bahasa-inggris': { category: 'wajib', name: 'Bahasa Inggris', icon: Globe, description: 'Grammar & Reading Comprehension' },
+  'matematika-lanjut': { category: 'pilihan', name: 'Matematika Lanjut', icon: Calculator, description: 'Kalkulus & Statistika' },
   'geografi': { category: 'pilihan', name: 'Geografi', icon: Globe, description: 'Geografi Fisik & Manusia' },
-  'fisika': { category: 'pilihan', name: 'Fisika', icon: Atom, description: 'Mekanika & Termodinamika' }
-  // Tambahkan mapel lain di sini jika API Anda menyediakannya
+  'fisika': { category: 'pilihan', name: 'Fisika', icon: Atom, description: 'Mekanika & Termodinamika' },
+  'kimia': { category: 'pilihan', name: 'Kimia', icon: FlaskConical, description: 'Kimia Anorganik & Organik' }
 };
 
 const SubjectSelectionPage = () => {
@@ -22,17 +24,14 @@ const SubjectSelectionPage = () => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        [cite_start]// Panggil API untuk mendapatkan daftar mata pelajaran [cite: 27]
         const response = await fetch('https://api-tka.resa.my.id/api/db/soal');
         const data = await response.json();
         
-        if (data.status && data.subjects) {
-          // Gabungkan data ID dari API dengan detail dari `subjectDetailsMap`
-          const availableSubjects = data.subjects
-            .map(id => ({
-              id,
-              ...(subjectDetailsMap[id] || { name: id, icon: BookOpen, description: 'Deskripsi tidak tersedia', category: 'lainnya' })
-            }));
+        if (data.status && Array.isArray(data.subjects)) {
+          const availableSubjects = data.subjects.map(id => ({
+            id,
+            ...(subjectDetailsMap[id] || { name: id, icon: BookOpen, description: 'Deskripsi tidak tersedia', category: 'lainnya' })
+          }));
           setSubjects(availableSubjects);
         } else {
           throw new Error("Gagal memuat daftar mata pelajaran.");
@@ -46,7 +45,6 @@ const SubjectSelectionPage = () => {
     fetchSubjects();
   }, []);
 
-  // Filter mata pelajaran berdasarkan kategori dari URL
   const subjectsToShow = subjects.filter(subject => subject.category === category);
   const pageTitle = category === 'wajib' ? 'Mata Pelajaran Wajib' : 'Mata Pelajaran Pilihan';
   const titleColor = category === 'wajib' ? 'text-blue-600' : 'text-green-600';
@@ -85,7 +83,7 @@ const SubjectSelectionPage = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {subjectsToShow.map((subject, index) => {
-                  const IconComponent = subject.icon;
+                  const IconComponent = subject.icon || BookOpen;
                   return (
                     <motion.div
                       key={subject.id}
@@ -99,9 +97,8 @@ const SubjectSelectionPage = () => {
                         <h4 className="text-xl font-bold text-gray-900">{subject.name}</h4>
                         <p className="text-sm text-gray-500 mt-2 flex-grow">{subject.description}</p>
                         <div className="w-full flex justify-center space-x-6 mt-6 pt-4 border-t">
-                          {/* Diperbarui sesuai dokumentasi API */}
-                          [cite_start]<div className="flex items-center space-x-2 text-sm text-gray-600"><FileText className="w-4 h-4" /><span>30 Soal</span></div> [cite: 29]
-                          [cite_start]<div className="flex items-center space-x-2 text-sm text-gray-600"><Clock className="w-4 h-4" /><span>30 Menit</span></div> [cite: 29]
+                          <div className="flex items-center space-x-2 text-sm text-gray-600"><FileText className="w-4 h-4" /><span>30 Soal</span></div>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600"><Clock className="w-4 h-4" /><span>30 Menit</span></div>
                         </div>
                       </div>
                     </motion.div>
@@ -119,9 +116,8 @@ const SubjectSelectionPage = () => {
                   <p className="mt-2 text-gray-700">{selectedSubject.description}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
-                   {/* Diperbarui sesuai dokumentasi API */}
-                  [cite_start]<div className="font-semibold text-gray-800">Jumlah Soal:</div><div className="text-gray-600">30 Soal</div> [cite: 29]
-                  [cite_start]<div className="font-semibold text-gray-800">Alokasi Waktu:</div><div className="text-gray-600">30 Menit</div> [cite: 29]
+                  <div className="font-semibold text-gray-800">Jumlah Soal:</div><div className="text-gray-600">30 Soal</div>
+                  <div className="font-semibold text-gray-800">Alokasi Waktu:</div><div className="text-gray-600">30 Menit</div>
                   <div className="font-semibold text-gray-800">Kategori:</div><div className="text-gray-600">{pageTitle}</div>
                 </div>
                 <div className="mt-8 flex justify-between items-center">
