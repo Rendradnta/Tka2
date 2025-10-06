@@ -6,6 +6,8 @@ import ExamPage from './pages/ExamPage';
 import ResultPage from './pages/ResultPage';
 import SubjectSelectionPage from './pages/SubjectSelectionPage';
 import NotFoundPage from './pages/NotFoundPage';
+import LeaderboardPage from './pages/LeaderboardPage'
+import HistoryPage from './pages/HistoryPage'
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,6 +56,8 @@ const App = () => {
         <Route path="/subject-selection/:category" element={<SubjectSelectionPage />} />
         <Route path="/exam/:subjectId" element={<ExamPage />} />
         <Route path="/result/:subjectId" element={<ResultPage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/history" element={<HistoryPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
