@@ -8,7 +8,7 @@ const subjectDetailsMap = {
   'matematika': { category: 'wajib', name: 'Matematika', icon: Calculator, description: 'Aljabar, Geometri, Kalkulus Dasar' },
   'bahasa-indonesia': { category: 'wajib', name: 'Bahasa Indonesia', icon: BookOpen, description: 'Tata Bahasa & Pemahaman Bacaan' },
   'geografi': { category: 'pilihan', name: 'Geografi', icon: Globe, description: 'Geografi Fisik & Manusia' },
-  'fisika': { category: 'pilihan', name: 'Fisika', icon: Atom, description: 'Mekanika & Termodinamika' },
+  'fisika': { category: 'pilihan', name: 'Fisika', icon: Atom, description: 'Mekanika & Termodinamika' }
   // Tambahkan mapel lain di sini jika API Anda menyediakannya
 };
 
