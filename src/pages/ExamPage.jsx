@@ -278,7 +278,21 @@ const ExamPage = () => {
                 </button>
               </div>
 
-              <div className="mb-6"><TextWithMath text={question.question} className="text-gray-800 leading-relaxed break-words" /></div>
+              <div className="mb-6">
+                {/* Tampilkan gambar jika ada URL-nya */}
+                {question.imageUrl && (
+                  <div className="mb-4">
+                    <img 
+                      src={question.imageUrl} 
+                      alt={`Gambar untuk soal ${currentQuestion + 1}`}
+                      className="max-w-full h-auto mx-auto rounded-lg shadow-md" 
+                    />
+                  </div>
+                )}
+                
+                {/* Tampilkan teks soal */}
+                <TextWithMath text={question.question} className="text-gray-800 leading-relaxed break-words" />
+              </div>
               {renderQuestionInput(question)}
 
               <div className="flex justify-between border-t pt-4 mt-4">
