@@ -1,7 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef, Fragment } from 'react';
+import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import TeX from '@matejmazur/react-katex';
 
+// Komponen dasar untuk merender satu rumus LaTeX
+const KatexRenderer = ({ math, isBlock }) => {
+  const katexRef = useRef();
+
+  useEffect(() => {
+    if (katexRef.current) {
+      katex.render(math, katexRef.current, {
+        throwOnError: false,
+        displayMode: isBlock, // Gunakan displayMode untuk rumus block
+      });
+    }
+  }, [math, isBlock]);
+
+  // Jika block, render sebagai div. Jika inline, render sebagai span.
+  return isBlock 
+    ? <div ref={katexRef} /> 
+    : <span ref={katexRef} />;
+};
+
+// Komponen utama yang memproses seluruh teks
 const TextWithMath = ({ text, className = '' }) => {
   if (typeof text !== 'string') {
     return null;
@@ -14,34 +34,34 @@ const TextWithMath = ({ text, className = '' }) => {
   const parts = text.split(mathRegex);
 
   return (
-    // Kita tambahkan kelas 'whitespace-pre-wrap' di sini agar \n berfungsi
-    <span className={`${className} whitespace-pre-wrap`}>
+    <span className={className}>
       {parts.map((part, index) => {
         // Cek apakah bagian ini adalah rumus matematika
         if (part.match(mathRegex)) {
           let mathContent = part;
-          let isBlock = false; // Default-nya adalah inline
+          let isBlock = false;
 
-          // Hapus pembatas dan cek apakah ini 'block' math
+          // Hapus pembatas dan tentukan apakah ini 'block' math
           if (part.startsWith('$') && part.endsWith('$')) {
             mathContent = part.slice(1, -1);
           } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
             mathContent = part.slice(2, -2);
           } else if (part.startsWith('\\[') && part.endsWith('\\]')) {
             mathContent = part.slice(2, -2);
-            isBlock = true; // Ini adalah 'block' math, harus di baris baru
+            isBlock = true;
           }
           
-          // Gunakan prop 'block' jika isBlock adalah true
-          if (isBlock) {
-            return <TeX key={index} block math={mathContent} />;
-          }
-          return <TeX key={index} math={mathContent} />;
+          return <KatexRenderer key={index} math={mathContent} isBlock={isBlock} />;
 
         } else {
-          // Jika bukan rumus, render sebagai teks biasa.
-          // \n akan berfungsi karena ada 'whitespace-pre-wrap' di parent <span>
-          return part;
+          // Handle teks biasa dan ganti karakter '\n' dengan tag <br />
+          const textParts = part.split(/(\n)/g);
+          return textParts.map((textPart, i) => {
+            if (textPart === '\n') {
+              return <br key={`${index}-${i}`} />;
+            }
+            return <Fragment key={`${index}-${i}`}>{textPart}</Fragment>;
+          });
         }
       })}
     </span>
