@@ -170,7 +170,20 @@ const ResultPage = () => {
               return (
                 <div key={question.id} className="bg-white rounded-lg shadow-md p-6">
                   <div className="font-semibold text-gray-800 mb-3">Soal {index + 1}</div>
-                  <div className="mb-4 text-gray-800 leading-relaxed break-words"><TextWithMath text={question.question} /></div>
+                  <div className="mb-4 text-gray-800 leading-relaxed break-words">
+                    {/* Tampilkan gambar jika ada URL-nya */}
+                    {question.imageUrl && (
+                      <div className="mb-4">
+                        <img 
+                          src={question.imageUrl} 
+                          alt={`Gambar untuk soal ${index + 1}`}
+                          className="max-w-full h-auto mx-auto rounded-lg shadow-md" 
+                        />
+                      </div>
+                    )}
+                    {/* Tampilkan teks soal */}
+                    <TextWithMath text={question.question} />
+                  </div>
                   
                   {question.type === 'multiple-choice' || question.type === 'multiple-choice-complex' ? (
                      <div className="space-y-2 mb-4">
