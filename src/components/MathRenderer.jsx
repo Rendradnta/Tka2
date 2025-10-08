@@ -7,13 +7,17 @@ const TextWithMath = ({ text, className = '' }) => {
     return null;
   }
 
-  // Regex untuk menemukan semua format LaTeX
+  // Pola untuk menemukan semua format LaTeX
   const mathRegex = /(\$[^$]+\$|\\\[.+?\\\]|\\\(.+?\\\))/g;
+  
+  // Pecah teks menjadi array berisi teks biasa dan rumus
   const parts = text.split(mathRegex);
 
   return (
-    <span className={className}>
+    // Kita tambahkan kelas 'whitespace-pre-wrap' di sini agar \n berfungsi
+    <span className={`${className} whitespace-pre-wrap`}>
       {parts.map((part, index) => {
+        // Cek apakah bagian ini adalah rumus matematika
         if (part.match(mathRegex)) {
           let mathContent = part;
           let isBlock = false; // Default-nya adalah inline
@@ -35,8 +39,9 @@ const TextWithMath = ({ text, className = '' }) => {
           return <TeX key={index} math={mathContent} />;
 
         } else {
-          // Render sebagai teks biasa
-          return <span key={index}>{part}</span>;
+          // Jika bukan rumus, render sebagai teks biasa.
+          // \n akan berfungsi karena ada 'whitespace-pre-wrap' di parent <span>
+          return part;
         }
       })}
     </span>
